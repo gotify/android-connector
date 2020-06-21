@@ -1,4 +1,4 @@
-package com.flyingpanda.gotificationtester.gotify
+package com.github.gotifynotiftester.gotify
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -8,7 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.*
 import androidx.annotation.RequiresApi
-import com.flyingpanda.gotificationtester.R
+import com.github.gotifynotiftester.R
 import java.util.concurrent.ThreadLocalRandom
 
 /**

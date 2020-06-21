@@ -1,4 +1,4 @@
-package com.flyingpanda.gotificationtester.gotify
+package com.github.gotifynotiftester.gotify
 
 /**
  * Command to the service to register a client, receiving callbacks

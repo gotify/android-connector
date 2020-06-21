@@ -1,4 +1,4 @@
-package com.flyingpanda.gotificationtester.gotify
+package com.github.gotifynotiftester.gotify
 
 import android.app.Activity
 import android.content.ComponentName
