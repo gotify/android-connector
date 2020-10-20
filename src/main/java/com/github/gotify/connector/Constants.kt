@@ -1,4 +1,4 @@
-package com.github.gotifynotiftester.gotify
+package com.github.gotify.connector
 
 /**
  * Command to the service to register a client, receiving callbacks

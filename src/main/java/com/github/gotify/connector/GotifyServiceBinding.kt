@@ -1,4 +1,4 @@
-package com.github.gotifynotiftester.gotify
+package com.github.gotify.connector
 
 import android.app.Activity
 import android.content.ComponentName
@@ -21,11 +21,11 @@ private const val gotify_package = "com.github.gotify"
 private const val messenger_service = "$gotify_package.service.GotifyRegisterService"
 
 fun logi(msg: String){
-        Log.i("GotifyServiceBind",msg)
-    }
+    Log.i("GotifyServiceBind",msg)
+}
 fun logw(msg: String){
-        Log.w("GotifyServiceBind",msg)
-    }
+    Log.w("GotifyServiceBind",msg)
+}
 
 open class GotifyServiceBinding : Activity() {
     /** Messenger for communicating with service.  */
@@ -37,8 +37,8 @@ open class GotifyServiceBinding : Activity() {
     /**
      * Handler of incoming messages from service.
      */
-    internal open inner class gHandler : Handler() {
-        override fun handleMessage(msg: Message) {
+    open inner class gHandler : Handler() {
+            override fun handleMessage(msg: Message) {
             when (msg.what) {
                 TYPE_CLIENT_STARTED -> logi("Received MSG_START from service")
                 TYPE_REGISTERED_CLIENT -> {
