@@ -13,7 +13,7 @@ import java.util.concurrent.ThreadLocalRandom
  * This service is used to receive notifications
  * from gotify (once registered)
  */
-var serviceName = "gotify.GotifyServiceNotification"
+var serviceName = "com.github.gotify.connector.GotifyServiceNotification"
 
 open class GotifyServiceNotification : Service() {
     /** For showing and hiding our notification.  */
