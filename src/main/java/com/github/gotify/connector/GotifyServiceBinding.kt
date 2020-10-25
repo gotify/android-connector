@@ -37,10 +37,13 @@ open class GotifyServiceBinding : Activity() {
     /**
      * Handler of incoming messages from service.
      */
-    open inner class gHandler : Handler() {
-            override fun handleMessage(msg: Message) {
+    private inner class gHandler : Handler() {
+        override fun handleMessage(msg: Message) {
             when (msg.what) {
-                TYPE_CLIENT_STARTED -> logi("Received MSG_START from service")
+                TYPE_CLIENT_STARTED -> {
+                    logi("Received MSG_START from service")
+                    onConnected()
+                }
                 TYPE_REGISTERED_CLIENT -> {
                     if(waitingForInfo) {
                         registerGotify(msg.sendingUid)
@@ -48,12 +51,17 @@ open class GotifyServiceBinding : Activity() {
                         URL = msg.data?.getString("url").toString()
                         logi("new token: $TOKEN")
                         logi("new url: $URL")
+                        onRegistered()
                     }
                 }
-                TYPE_UNREGISTERED_CLIENT -> logi("App is unregistered")
+                TYPE_UNREGISTERED_CLIENT -> {
+                    logi("App is unregistered")
+                    onUnregistered()
+                }
                 else -> super.handleMessage(msg)
             }
         }
+
         private fun registerGotify(id: Int){
             // Trust only the app we registered to
             // We don't trust other apps
@@ -64,10 +72,13 @@ open class GotifyServiceBinding : Activity() {
     }
 
     /**
-     * Target we publish for clients to send messages to gHandler.
-     * open if the subclass want to add functions to the handler
+     * Functions to override to add actions to the handler
      */
-    open val gMessenger = Messenger(gHandler())
+    open fun onConnected(){}
+    open fun onRegistered(){}
+    open fun onUnregistered(){}
+
+    private val gMessenger = Messenger(gHandler())
 
     /**
      * Class for interacting with the main interface of the service.
