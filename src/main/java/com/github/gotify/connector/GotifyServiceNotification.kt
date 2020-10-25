@@ -27,8 +27,8 @@ open class GotifyServiceNotification : Service() {
     internal inner class gHandler : Handler() {
         override fun handleMessage(msg: Message) {
             when (msg.what) {
-                TYPE_CHANGED_URL -> if (checkGotifyId(msg.sendingUid)) newUrl(msg)
-                TYPE_MESSAGE -> if (checkGotifyId(msg.sendingUid)) showNotification(msg)
+                TYPE_CHANGED_URL -> if (checkGotifyId(msg.sendingUid)) onNewUrl(msg)
+                TYPE_MESSAGE -> if (checkGotifyId(msg.sendingUid)) onMessage(msg)
                 else -> super.handleMessage(msg)
             }
         }
@@ -43,11 +43,11 @@ open class GotifyServiceNotification : Service() {
     }
 
     /** override it to handle newUrl */
-    open fun newUrl(msg: Message) {
+    open fun onNewUrl(msg: Message) {
     }
 
     /** override it if you want to custom your notifications */
-    open fun showNotification(msg: Message) {
+    open fun onMessage(msg: Message) {
         // In this sample, we'll use the same text for the ticker and the expanded notification
         val text = msg.data?.getString("message")
         var title = msg.data?.getString("title")
