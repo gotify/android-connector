@@ -107,18 +107,18 @@ open class GotifyServiceBinding : Activity() {
             // This is called when the connection with the service has been
             // unexpectedly disconnected -- that is, its process crashed.
             gService = null
-            doUnbindService()
+            unbindRemoteService()
             logi("Remote service disconnected")
         }
     }
 
-    fun doBindService() {
+    fun bindRemoteService() {
         val intent = Intent()
         intent.component = ComponentName(gotify_package , messenger_service)
         bindService( intent, gConnection, Context.BIND_AUTO_CREATE)
     }
 
-    fun doUnbindService() {
+    fun unbindRemoteService() {
         if (gIsBound) {
             // Detach our existing connection.
             unbindService(gConnection)
@@ -126,7 +126,7 @@ open class GotifyServiceBinding : Activity() {
         }
     }
 
-    fun doRegisterApp(){
+    fun registerApp(){
         if(!gIsBound){
             logw("You need to bind fisrt")
             return
@@ -145,7 +145,7 @@ open class GotifyServiceBinding : Activity() {
         }
     }
 
-    fun doUnregisterApp(){
+    fun unregisterApp(){
         if(!gIsBound){
             logw("You need to bind first")
             return
