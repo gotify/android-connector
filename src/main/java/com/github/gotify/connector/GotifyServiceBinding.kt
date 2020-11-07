@@ -1,33 +1,32 @@
 package com.github.gotify.connector
 
-import android.app.Activity
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.*
-import android.util.Log
 import androidx.core.os.bundleOf
 
 /**
  * This Activity is used to register to gotify
  */
 
-//TODO use sharedPref
-var TOKEN = ""
-var URL = ""
-
 private const val gotify_package = "com.github.gotify"
 private const val messenger_service = "$gotify_package.service.GotifyRegisterService"
 
-fun logi(msg: String){
-    Log.i("GotifyServiceBind",msg)
-}
-fun logw(msg: String){
-    Log.w("GotifyServiceBind",msg)
+data class Registration(val senderUid: Int, val url: String, val token: String)
+
+interface GotifyBindingHandler {
+    fun onConnected(service: GotifyServiceBinding) {
+        service.registerApp();
+    }
+    fun onRegistered(service: GotifyServiceBinding, registration: Registration){
+        registerGotifyIdInSharedPref(service.context,registration.senderUid)
+    }
+    fun onUnregistered(service: GotifyServiceBinding)
 }
 
-open class GotifyServiceBinding : Activity() {
+open class GotifyServiceBinding(var context: Context, var bindingHandler: GotifyBindingHandler){
     /** Messenger for communicating with service.  */
     private var gService: Messenger? = null
     /** To known if it if bound to the service */
@@ -42,41 +41,27 @@ open class GotifyServiceBinding : Activity() {
             when (msg.what) {
                 TYPE_CLIENT_STARTED -> {
                     logi("Received MSG_START from service")
-                    onConnected()
+                    bindingHandler.onConnected(this@GotifyServiceBinding)
                 }
                 TYPE_REGISTERED_CLIENT -> {
                     if(waitingForInfo) {
-                        registerGotify(msg.sendingUid)
-                        TOKEN = msg.data?.getString("token").toString()
-                        URL = msg.data?.getString("url").toString()
-                        logi("new token: $TOKEN")
-                        logi("new url: $URL")
-                        onRegistered()
+                        waitingForInfo = false
+                        val url = msg.data?.getString("url").toString()
+                        val token = msg.data?.getString("token").toString()
+                        logi("new url: $url")
+                        logi("new token: $token")
+                        bindingHandler.onRegistered(this@GotifyServiceBinding,
+                                Registration(msg.sendingUid,url,token))
                     }
                 }
                 TYPE_UNREGISTERED_CLIENT -> {
                     logi("App is unregistered")
-                    onUnregistered()
+                    bindingHandler.onUnregistered(this@GotifyServiceBinding)
                 }
                 else -> super.handleMessage(msg)
             }
         }
-
-        private fun registerGotify(id: Int){
-            // Trust only the app we registered to
-            // We don't trust other apps
-            // TODO: manually clear cache
-            getSharedPreferences(PREF_GOTIFY, Context.MODE_PRIVATE).edit().putInt(PREF_GOTIFY_KEY_ID, id).commit()
-            waitingForInfo = false
-        }
     }
-
-    /**
-     * Functions to override to add actions to the handler
-     */
-    open fun onConnected(){}
-    open fun onRegistered(){}
-    open fun onUnregistered(){}
 
     private val gMessenger = Messenger(gHandler())
 
@@ -115,13 +100,13 @@ open class GotifyServiceBinding : Activity() {
     fun bindRemoteService() {
         val intent = Intent()
         intent.component = ComponentName(gotify_package , messenger_service)
-        bindService( intent, gConnection, Context.BIND_AUTO_CREATE)
+        context.bindService(intent, gConnection, Context.BIND_AUTO_CREATE)
     }
 
     fun unbindRemoteService() {
         if (gIsBound) {
             // Detach our existing connection.
-            unbindService(gConnection)
+            context.unbindService(gConnection)
             gIsBound = false
         }
     }
@@ -135,7 +120,7 @@ open class GotifyServiceBinding : Activity() {
             val msg = Message.obtain(null,
                 TYPE_REGISTER_CLIENT, 0, 0)
             msg.replyTo = gMessenger
-            msg.data = bundleOf("package" to packageName, "service" to serviceName)
+            msg.data = bundleOf("package" to context.packageName, "service" to serviceName)
             waitingForInfo = true
             gService!!.send(msg)
         } catch (e: RemoteException) {
@@ -154,7 +139,7 @@ open class GotifyServiceBinding : Activity() {
             val msg = Message.obtain(null,
                 TYPE_UNREGISTER_CLIENT, 0, 0)
             msg.replyTo = gMessenger
-            msg.data = bundleOf("package" to packageName)
+            msg.data = bundleOf("package" to context.packageName)
             gService!!.send(msg)
         } catch (e: RemoteException) {
             // There is nothing special we need to do if the service
