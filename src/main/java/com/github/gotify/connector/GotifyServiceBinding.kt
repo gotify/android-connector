@@ -17,16 +17,14 @@ private const val messenger_service = "$gotify_package.service.GotifyRegisterSer
 data class Registration(val senderUid: Int, val url: String, val token: String)
 
 interface GotifyBindingHandler {
-    fun onConnected(service: GotifyServiceBinding) {
-        service.registerApp();
-    }
+    fun onConnected(service: GotifyServiceBinding)
     fun onRegistered(service: GotifyServiceBinding, registration: Registration){
         registerGotifyIdInSharedPref(service.context,registration.senderUid)
     }
     fun onUnregistered(service: GotifyServiceBinding)
 }
 
-open class GotifyServiceBinding(var context: Context, var bindingHandler: GotifyBindingHandler){
+class GotifyServiceBinding(var context: Context, var bindingHandler: GotifyBindingHandler){
     /** Messenger for communicating with service.  */
     private var gService: Messenger? = null
     /** To known if it if bound to the service */
@@ -111,7 +109,7 @@ open class GotifyServiceBinding(var context: Context, var bindingHandler: Gotify
         }
     }
 
-    fun registerApp(){
+    fun registerApp(serviceName: String){
         if(!gIsBound){
             logw("You need to bind fisrt")
             return
