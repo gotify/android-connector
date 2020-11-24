@@ -81,6 +81,7 @@ class GotifyServiceBinding(var context: Context, var bindingHandler: GotifyBindi
             } catch (e: RemoteException) {
                 // There is nothing special we need to do if the service
                 // has crashed.
+                logw("The remote service has crashed when the service has been connected")
             }
             isBound = true
             logi("Remote service connected")
@@ -111,7 +112,7 @@ class GotifyServiceBinding(var context: Context, var bindingHandler: GotifyBindi
 
     fun registerApp(serviceName: String){
         if(!isBound){
-            logw("You need to bind fisrt")
+            logw("Trying to register app without being bound to gotify registration service")
             return
         }
         try {
@@ -125,12 +126,13 @@ class GotifyServiceBinding(var context: Context, var bindingHandler: GotifyBindi
             waitingForInfo = false
             // There is nothing special we need to do if the service
             // has crashed.
+            logw("The remote service has crashed during registration")
         }
     }
 
     fun unregisterApp(){
         if(!isBound){
-            logw("You need to bind first")
+            logw("Trying to unregister app without being bound to gotify registration service")
             return
         }
         try {
@@ -142,6 +144,7 @@ class GotifyServiceBinding(var context: Context, var bindingHandler: GotifyBindi
         } catch (e: RemoteException) {
             // There is nothing special we need to do if the service
             // has crashed.
+            logw("The remote service has crashed during unregistration")
         }
     }
 }
