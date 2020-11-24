@@ -34,34 +34,34 @@ class GotifyServiceBinding(var context: Context, var bindingHandler: GotifyBindi
     /**
      * Handler of incoming messages from service.
      */
-    private inner class replyHandler : Handler() {
+    private class ReplyHandler(var service: GotifyServiceBinding) : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
             when (msg.what) {
                 TYPE_CLIENT_STARTED -> {
                     logi("Received MSG_START from service")
-                    bindingHandler.onConnected(this@GotifyServiceBinding)
+                    service.bindingHandler.onConnected(service)
                 }
                 TYPE_REGISTERED_CLIENT -> {
-                    if(waitingForInfo) {
-                        waitingForInfo = false
+                    if(service.waitingForInfo) {
+                        service.waitingForInfo = false
                         val url = msg.data?.getString("url").toString()
                         val token = msg.data?.getString("token").toString()
                         logi("new url: $url")
                         logi("new token: $token")
-                        bindingHandler.onRegistered(this@GotifyServiceBinding,
+                        service.bindingHandler.onRegistered(service,
                                 Registration(msg.sendingUid,url,token))
                     }
                 }
                 TYPE_UNREGISTERED_CLIENT -> {
                     logi("App is unregistered")
-                    bindingHandler.onUnregistered(this@GotifyServiceBinding)
+                    service.bindingHandler.onUnregistered(service)
                 }
                 else -> super.handleMessage(msg)
             }
         }
     }
 
-    private val replyMessenger = Messenger(replyHandler())
+    private val replyMessenger = Messenger(ReplyHandler(this))
 
     /**
      * Class for interacting with the main interface of the service.
