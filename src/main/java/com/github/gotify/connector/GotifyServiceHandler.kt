@@ -1,6 +1,5 @@
 package com.github.gotify.connector
 
-import android.content.Context
 import android.os.*
 
 /**
@@ -8,7 +7,7 @@ import android.os.*
  * from gotify (once registered)
  */
 
-open class GotifyServiceHandler(private val context: Context?) : Handler() {
+open class GotifyServiceHandler() : Handler(Looper.getMainLooper()) {
 
     override fun handleMessage(msg: Message) {
         if (!this.isTrusted(msg.sendingUid)) {
@@ -27,13 +26,9 @@ open class GotifyServiceHandler(private val context: Context?) : Handler() {
     open fun onUrlChange(url: String) {}
 
     open fun isTrusted(uid: Int): Boolean {
-        /** If you don't want to use a context, you'll have
-         * to override this function
+        /** You  need to override this function
+         * to control gotify uid
          */
-        if (context == null){
-            logw("No context with GotifyServiceHandler, No Id is trusted")
-            return false
-        }
-        return uid == getGotifyIdInSharedPref(context)
+        return false
     }
 }

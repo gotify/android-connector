@@ -18,9 +18,7 @@ data class Registration(val senderUid: Int, val url: String, val token: String)
 
 interface GotifyBindingHandler {
     fun onConnected(service: GotifyServiceBinding)
-    fun onRegistered(service: GotifyServiceBinding, registration: Registration){
-        registerGotifyIdInSharedPref(service.context,registration.senderUid)
-    }
+    fun onRegistered(service: GotifyServiceBinding, registration: Registration)
     fun onUnregistered(service: GotifyServiceBinding)
 }
 
