@@ -16,12 +16,13 @@ open class GotifyServiceHandler() : Handler(Looper.getMainLooper()) {
         }
         when (msg.what) {
             TYPE_CHANGED_URL -> onUrlChange(msg.data.getString("changedUrl").orEmpty())
-            TYPE_MESSAGE -> onMessage(msg)
+            TYPE_MESSAGE -> onMessage(GotifyMessage().initFromBundle(msg.data))
             else -> super.handleMessage(msg)
         }
     }
 
-    open fun onMessage(message: Message){}
+    //open fun onMessage(message: Message){}
+    open fun onMessage(message: GotifyMessage){}
 
     open fun onUrlChange(url: String) {}
 
