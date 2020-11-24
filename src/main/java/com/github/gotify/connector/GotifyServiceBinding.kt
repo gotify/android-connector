@@ -8,7 +8,7 @@ import android.os.*
 import androidx.core.os.bundleOf
 
 /**
- * This Activity is used to register to gotify
+ * This class is used to register to gotify
  */
 
 private const val gotify_package = "com.github.gotify"
@@ -26,15 +26,15 @@ interface GotifyBindingHandler {
 
 class GotifyServiceBinding(var context: Context, var bindingHandler: GotifyBindingHandler){
     /** Messenger for communicating with service.  */
-    private var gService: Messenger? = null
+    private var messengerToGotify: Messenger? = null
     /** To known if it if bound to the service */
-    private var gIsBound = false
+    private var isBound = false
     private var waitingForInfo = false
 
     /**
      * Handler of incoming messages from service.
      */
-    private inner class gHandler : Handler() {
+    private inner class replyHandler : Handler() {
         override fun handleMessage(msg: Message) {
             when (msg.what) {
                 TYPE_CLIENT_STARTED -> {
@@ -61,35 +61,35 @@ class GotifyServiceBinding(var context: Context, var bindingHandler: GotifyBindi
         }
     }
 
-    private val gMessenger = Messenger(gHandler())
+    private val replyMessenger = Messenger(replyHandler())
 
     /**
      * Class for interacting with the main interface of the service.
      */
-    private val gConnection: ServiceConnection = object : ServiceConnection {
+    private val connectionToGotify: ServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(
             className: ComponentName,
             service: IBinder
         ) {
-            gService = Messenger(service)
+            messengerToGotify = Messenger(service)
             try {
                 // Tell the service we have started
                 val msg = Message.obtain(null,
                     TYPE_CLIENT_STARTED, 0, 0)
-                msg.replyTo = gMessenger
-                gService!!.send(msg)
+                msg.replyTo = replyMessenger
+                messengerToGotify!!.send(msg)
             } catch (e: RemoteException) {
                 // There is nothing special we need to do if the service
                 // has crashed.
             }
-            gIsBound = true
+            isBound = true
             logi("Remote service connected")
         }
 
         override fun onServiceDisconnected(className: ComponentName) {
             // This is called when the connection with the service has been
             // unexpectedly disconnected -- that is, its process crashed.
-            gService = null
+            messengerToGotify = null
             unbindRemoteService()
             logi("Remote service disconnected")
         }
@@ -98,29 +98,29 @@ class GotifyServiceBinding(var context: Context, var bindingHandler: GotifyBindi
     fun bindRemoteService() {
         val intent = Intent()
         intent.component = ComponentName(gotify_package , messenger_service)
-        context.bindService(intent, gConnection, Context.BIND_AUTO_CREATE)
+        context.bindService(intent, connectionToGotify, Context.BIND_AUTO_CREATE)
     }
 
     fun unbindRemoteService() {
-        if (gIsBound) {
+        if (isBound) {
             // Detach our existing connection.
-            context.unbindService(gConnection)
-            gIsBound = false
+            context.unbindService(connectionToGotify)
+            isBound = false
         }
     }
 
     fun registerApp(serviceName: String){
-        if(!gIsBound){
+        if(!isBound){
             logw("You need to bind fisrt")
             return
         }
         try {
             val msg = Message.obtain(null,
                 TYPE_REGISTER_CLIENT, 0, 0)
-            msg.replyTo = gMessenger
+            msg.replyTo = replyMessenger
             msg.data = bundleOf("package" to context.packageName, "service" to serviceName)
             waitingForInfo = true
-            gService!!.send(msg)
+            messengerToGotify!!.send(msg)
         } catch (e: RemoteException) {
             waitingForInfo = false
             // There is nothing special we need to do if the service
@@ -129,16 +129,16 @@ class GotifyServiceBinding(var context: Context, var bindingHandler: GotifyBindi
     }
 
     fun unregisterApp(){
-        if(!gIsBound){
+        if(!isBound){
             logw("You need to bind first")
             return
         }
         try {
             val msg = Message.obtain(null,
                 TYPE_UNREGISTER_CLIENT, 0, 0)
-            msg.replyTo = gMessenger
+            msg.replyTo = replyMessenger
             msg.data = bundleOf("package" to context.packageName)
-            gService!!.send(msg)
+            messengerToGotify!!.send(msg)
         } catch (e: RemoteException) {
             // There is nothing special we need to do if the service
             // has crashed.
