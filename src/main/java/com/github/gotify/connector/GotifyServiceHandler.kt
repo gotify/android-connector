@@ -8,7 +8,7 @@ import com.google.gson.Gson
  * from gotify (once registered)
  */
 
-open class GotifyServiceHandler() : Handler(Looper.getMainLooper()) {
+open class GotifyServiceHandler(looper: Looper) : Handler(looper) {
 
     override fun handleMessage(msg: Message) {
         if (!this.isTrusted(msg.sendingUid)) {
